@@ -1,0 +1,27 @@
+{
+  "name": "express-anatoly-the-cat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon ./index.js",
+    "pm2install": "node ./node_modules/pm2/bin/pm2 start ./index.js",
+    "pm2update": "node ./node_modules/pm2/bin/pm2 update",
+    "pm2list": "node ./node_modules/pm2/bin/pm2 list",
+    "pm2logs": "node ./node_modules/pm2/bin/pm2 logs",
+    "pm2restart": "node ./node_modules/pm2/bin/pm2 stop 4 && node ./node_modules/pm2/bin/pm2 start 4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^0.15.0",
+    "discord.js": "^14.2.0",
+    "dotenv": "^16.0.1",
+    "isomorphic-fetch": "^3.0.0",
+    "matcher": "^5.0.0",
+    "mongoose": "^6.4.4",
+    "pm2": "^5.2.0"
+  }
+}
