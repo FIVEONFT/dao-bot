@@ -18,6 +18,17 @@ class DiscordController {
         this.commandFiles = null;
     }
 
+    registerCommands() {
+        this.commands = {};
+        if (!this.commandFiles) this.commandFiles = fs.readdirSync(config.discord.commandsPath).filter(file => file.endsWith('.js'));
+        for (const file of this.commandFiles) {
+            if (file.startsWith('_')) continue;
+            const command = require(`${config.discord.commandsPath}/${file}`);
+            if (config.isDev && !command.data.name.startsWith('dev-')) command.data.name = `dev-${command.data.name}`;
+            if (!this.commands[command.data.name]) this.commands[command.data.name] = command;
+        }
+    }
+
     async initCommands(guild, mongoGuild) {
 
         console.log('[initCommands] init');
@@ -28,17 +39,12 @@ class DiscordController {
         console.log('[initCommands] start');
 
         // init commands
-        this.commands = {};
-        if (!this.commandFiles) this.commandFiles = fs.readdirSync(config.discord.commandsPath).filter(file => file.endsWith('.js'));
-
         let addCommands = [];
         for (const file of this.commandFiles) {
             if (file.startsWith('_')) continue;
             const command = require(`${config.discord.commandsPath}/${file}`);
             if (config.isDev && !command.data.name.startsWith('dev-')) command.data.name = `dev-${command.data.name}`;
-            // await guild.commands.create(command.data);
             addCommands.push(command.data);
-            if (!this.commands[command.data.name]) this.commands[command.data.name] = command;
         }
 
         try {
@@ -47,7 +53,6 @@ class DiscordController {
                 mongoGuild.commandsVersion = config.commandsVersion;
                 await mongoGuild.save();
             }
-
             console.log('[initCommands] done');
         } catch (e) {
             console.log('[DiscordController] could not set commands');
@@ -95,6 +100,7 @@ class DiscordController {
         const allGuilds = await GuildController.getAllGuilds();
         for (let i = 0; i < allGuilds.length; i++) {
             const getGuild = this.getGuildById(allGuilds[i].discordId);
+            if (!getGuild?.name) return;
             await cb(getGuild, allGuilds[i]);
         }
     }
@@ -107,6 +113,8 @@ class DiscordController {
             console.log('[DiscordController] client ready');
 
             client.user.setActivity('https://five-o.app');
+
+            this.registerCommands();
 
             // for each guild the bot has joined
             await this.forEachGuild(async (guild, mongoGuild) => {
